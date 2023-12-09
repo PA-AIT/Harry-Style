@@ -32,6 +32,13 @@ pdf_email_address = st.text_input("Enter the email address from which to extract
 # Specify the date for filtering
 selected_date = st.text_input("Enter the date (YYYY-MM-DD) to filter emails")
 
+# Convert date format for IMAP search
+try:
+    imap_date_format = pd.to_datetime(selected_date).strftime("%d-%b-%Y").upper()
+except Exception as e:
+    st.error(f"Error converting date format: {str(e)}")
+    st.stop()
+
 if st.button("Fetch and Display PDF Summaries"):
     try:
         # URL for IMAP connection
@@ -47,7 +54,7 @@ if st.button("Fetch and Display PDF Summaries"):
 
             # Define the key and value for email search
             key = 'SINCE'
-            value = selected_date  # Use the user-specified date to search
+            value = imap_date_format  # Use the user-specified date to search
             _, data = my_mail.search(None, key, value)
 
             mail_id_list = data[0].split()
@@ -90,6 +97,16 @@ if st.button("Fetch and Display PDF Summaries"):
             for info in info_list:
                 st.subheader(f"Chapter {info['Chapter']} - Received Date: {info['Received Date']}")
                 st.write(info["Summarized Chapter Content"])
+
+            # Download button
+            if st.button("Download Summaries as Text File"):
+                summary_text = "\n\n".join(f"Chapter {info['Chapter']} - Received Date: {info['Received Date']}\n{info['Summarized Chapter Content']}" for info in info_list)
+                st.download_button(
+                    label="Download Summaries",
+                    data=summary_text,
+                    key="download_summaries_txt",
+                    file_name="summaries.txt",
+                )
 
     except Exception as e:
         st.error(f"An error occurred during IMAP connection: {str(e)}")
