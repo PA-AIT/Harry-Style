@@ -1,0 +1,5 @@
+nltk==3.6.5
+PyMuPDF==1.21.0
+sumy==0.8.1
+pillow==9.0.1
+python-docx==0.8.11
